@@ -5,3 +5,5 @@ numpy
 plotly
 pytz
 yfinance
+pandas_ta
+pandas-datareader
