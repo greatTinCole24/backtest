@@ -5,6 +5,7 @@ import numpy as np
 import plotly.graph_objs as go
 import pytz
 from datetime import datetime
+import pandas_ta as ta
 
 # Convert date to datetime with timezone
 def convert_to_timezone_aware(date_obj):
