@@ -5,7 +5,7 @@ import numpy as np
 import plotly.graph_objs as go
 import pytz
 from datetime import datetime
-import pandas_ta as ta
+import pandas_ta as ta  # Ensure pandas_ta is installed
 
 # Convert date to datetime with timezone
 def convert_to_timezone_aware(date_obj):
@@ -47,8 +47,14 @@ if backtest_clicked:
     start_date_tz = convert_to_timezone_aware(start_date)
     end_date_tz = convert_to_timezone_aware(end_date)
 
+    # Ensure valid timeframe selection for stocks (Yahoo Finance limitation)
+    if symbol in ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"]:
+        valid_timeframe = "1d"  # Stocks only support daily or higher timeframes
+    else:
+        valid_timeframe = timeframe  # Crypto supports all timeframes
+
     # Fetch market data
-    data = vbt.YFData.download(symbol, start=start_date_tz, end=end_date_tz, interval=timeframe).get('Close')
+    data = vbt.YFData.download(symbol, start=start_date_tz, end=end_date_tz, interval=valid_timeframe).get('Close')
 
     if data is None or data.empty:
         st.error(f"⚠️ No data found for {symbol}. Try another ticker.")
@@ -57,7 +63,9 @@ if backtest_clicked:
         fast_length = 12
         slow_length = 26
         signal_length = 9
-        macd_line, signal_line, _ = vbt.IndicatorFactory.from_pandas_ta("macd")(data, fast_length, slow_length, signal_length)
+        macd_df = data.ta.macd(fast=fast_length, slow=slow_length, signal=signal_length)
+        macd_line = macd_df["MACD_12_26_9"]
+        signal_line = macd_df["MACDs_12_26_9"]
 
         # 9 EMA Calculation
         ema9 = vbt.MA.run(data, 9, short_name='ema9', ewm=True).ma
